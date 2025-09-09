@@ -169,10 +169,10 @@ export class Bundle {
   /**
   * custom bundle
   *
-  * @param bundleId the bundle id
+  * @param id the bundle id
   */
-  public static of(bundleId: string) {
-    return new Bundle(bundleId);
+  public static of(id: string) {
+    return new Bundle(id);
   }
 
   /**
