@@ -5,7 +5,7 @@ export class BlueprintBase {
   /**
    * @param id the blueprint id
    */
-  constructor(public readonly id: string) { }
+  constructor(public readonly id: string) {}
 }
 
 /**
@@ -26,7 +26,6 @@ export class WindowsOSBlueprint extends BlueprintBase {
    * windows_server_2016
    */
   public static readonly WINDOWS_SERVER_2016 = WindowsOSBlueprint.of('windows_server_2016');
-
 
   /**
    * custom blueprint id
@@ -78,8 +77,8 @@ export class LinuxOSBlueprint extends BlueprintBase {
   public static readonly FREEBSD_14 = LinuxOSBlueprint.of('freebsd_14');
 
   /**
-  * freebsd_13
-  */
+   * freebsd_13
+   */
   public static readonly FREEBSD_13 = LinuxOSBlueprint.of('freebsd_13');
 
   /**
@@ -97,7 +96,6 @@ export class LinuxOSBlueprint extends BlueprintBase {
    */
   public static readonly CENTOS_8 = LinuxOSBlueprint.of('centos_stream_9');
 
-
   /**
    * custom blueprint id
    *
@@ -113,8 +111,8 @@ export class LinuxOSBlueprint extends BlueprintBase {
  */
 export class WindowsAppBlueprint extends BlueprintBase {
   /**
-  * windows_server_2022_sql_2016_express
-  */
+   * windows_server_2022_sql_2016_express
+   */
   public static readonly WINDOWS_SERVER_2016_SQL_2022_EXPRESS = WindowsOSBlueprint.of(
     'windows_server_2022_sql_2016_express',
   );
@@ -142,7 +140,6 @@ export class WindowsAppBlueprint extends BlueprintBase {
     return new WindowsAppBlueprint(id);
   }
 }
-
 
 /**
  * Blueprint for Linux App.
