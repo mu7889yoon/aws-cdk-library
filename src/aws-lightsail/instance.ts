@@ -1,9 +1,6 @@
-import * as cdk from 'aws-cdk-lib';
-import { Resource } from 'aws-cdk-lib';
+import { Resource, IResource, aws_lightsail, Token, IResolvable } from 'aws-cdk-lib';
 import { UserData } from 'aws-cdk-lib/aws-ec2';
-import { CfnInstance, CfnInstanceProps } from 'aws-cdk-lib/aws-lightsail';
 import { Construct } from 'constructs';
-import { AddOn } from './addon';
 import {
   LinuxOSBlueprint,
   WindowsOSBlueprint,
@@ -12,12 +9,52 @@ import {
   BlueprintBase,
 } from './blueprints';
 import { Bundle } from './bundle';
-import { Hardware } from './hardware';
-import { Networking } from './networking';
+import { Disk } from './disk';
 
-/**
- * Properties for defining a Lightsail Instance.
- */
+export interface IInstance extends IResource {
+  /**
+   * The instance Arn.
+   * 
+   * @attribute
+   */
+  readonly instanceArn: string;
+
+  /**
+   * The ipv6 addresses.   
+   */
+  readonly ipv6Addresses: string[];
+
+  /**
+   * The is static ip.
+   */
+  readonly isStaticIp: IResolvable;
+
+  /**
+   * The location availability zone.
+   */
+  readonly locationAvailabilityZone: string;
+
+  /**
+   * The location region name.
+   */
+  readonly locationRegionName: string;
+
+  /**
+   * The networking monthly transfer gb per month allocated.
+   */
+  readonly networkingMonthlyTransferGbPerMonthAllocated: string;
+
+  /**
+   * The private ip address.
+   */
+  readonly privateIpAddress: string;
+
+  /**
+   * The public ip address.
+   */
+  readonly publicIpAddress: string;
+}
+
 export interface InstanceProps {
   /**
    * The addons for the lightsail instance.
