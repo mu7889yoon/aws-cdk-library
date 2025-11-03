@@ -113,21 +113,21 @@ export class WindowsAppBlueprint extends BlueprintBase {
   /**
    * windows_server_2022_sql_2016_express
    */
-  public static readonly WINDOWS_SERVER_2016_SQL_2022_EXPRESS = WindowsOSBlueprint.of(
-    'windows_server_2022_sql_2016_express',
+  public static readonly WINDOWS_SERVER_2016_SQL_2022_EXPRESS = WindowsAppBlueprint.of(
+    'windows_server_2016_sql_2016_express',
   );
 
   /**
    * windows_server_2019_sql_2016_express
    */
-  public static readonly WINDOWS_SERVER_2019_SQL_2016_EXPRESS = WindowsOSBlueprint.of(
+  public static readonly WINDOWS_SERVER_2019_SQL_2016_EXPRESS = WindowsAppBlueprint.of(
     'windows_server_2019_sql_2016_express',
   );
 
   /**
    * windows_server_2016_sql_2016_express
    */
-  public static readonly WINDOWS_SERVER_2016_SQL_2016_EXPRESS = WindowsOSBlueprint.of(
+  public static readonly WINDOWS_SERVER_2016_SQL_2016_EXPRESS = WindowsAppBlueprint.of(
     'windows_server_2016_sql_2016_express',
   );
 

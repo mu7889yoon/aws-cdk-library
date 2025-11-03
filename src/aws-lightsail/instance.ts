@@ -1,5 +1,5 @@
-import { Resource, IResource, aws_lightsail, Token, IResolvable } from 'aws-cdk-lib';
-import { UserData } from 'aws-cdk-lib/aws-ec2';
+import * as aws_cdk from 'aws-cdk-lib';
+import { Resource, IResource, aws_lightsail, Token, IResolvable, Lazy, Names } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import {
   LinuxOSBlueprint,
@@ -9,7 +9,6 @@ import {
   BlueprintBase,
 } from './blueprints';
 import { Bundle } from './bundle';
-import { Disk } from './disk';
 
 export interface IInstance extends IResource {
   /**
@@ -57,223 +56,123 @@ export interface IInstance extends IResource {
 
 export interface InstanceProps {
   /**
-   * The addons for the lightsail instance.
-   *
-   * @default - no addons
+   * It describes the add-ons for an instance.
+   * @default - no add-ons.
    */
   readonly addOns?: AddOn[];
+
   /**
-   * The availability zone of the lightsail instance.
-   *
-   */
-  readonly availabilityZone?: string;
-  /**
-   * The blueprint of the lightsail instance.
+   * It describes the blueprint for an instance.   
+   * The blueprint determines the operating system, software.
    */
   readonly blueprint: LinuxOSBlueprint | WindowsOSBlueprint | LinuxAppBlueprint | WindowsAppBlueprint | BlueprintBase;
+
   /**
-   * The bundle of the lightsail instance.
+   * It describes the bundle for an instance.
+   * The bundle determines the hardware for an instance.
    */
   readonly bundle: Bundle;
+
   /**
-   * The hardware of the instance.
+   * It describes the hardware for an instance.
+   * The hardware determines the CPU, memory, and storage for an instance.
    */
-  readonly hardware?: Hardware;
+  readonly hardware?: HardwareProps;
+
   /**
-   * The instance name.
-   *
-   * @default - construct id of the Instance
+   * It describes the name of the instance.
+   * @default - the instance name is the id.
    */
   readonly instanceName?: string;
+
   /**
-   * The key pair name of the lightsail instance.
+   * It describes the name of the key pair for an instance.
+   * @default - no key pair.
    */
   readonly keyPairName?: string;
+
   /**
-   * The networking of the lightsail instance.
+   * It describes the networking for an instance.
+   * @default - no networking.
    */
   readonly networking?: Networking;
+
   /**
-   * The user data of the lightsail instance.
+   * It describes the user data for an instance.
+   * @default - no user data.
    */
-  readonly userData?: UserData;
+  readonly userData?: aws_cdk.aws_ec2.UserData;
 }
 
-/**
- * The interface of the instance.
- */
-export interface IInstance extends cdk.IResource {
-  /**
-   * The Name of the instance.
-   *
-   * @attribute
-   */
-  readonly instanceName: string;
-}
-
-/**
- * Represents the lightsail instance.
- */
-export class Instance extends Resource implements IInstance {
-  /**
-   * Import from instance name.
-   */
-  public static fromInstanceName(scope: Construct, id: string, instanceName: string): IInstance {
-    class Import extends cdk.Resource {
-      public instanceName = instanceName;
-      public instanceArn = cdk.Stack.of(this).formatArn({
-        resource: 'Instance',
-        service: 'lightsail',
-        resourceName: instanceName,
-      });
-    }
-    return new Import(scope, id);
-  }
-  /**
-   * The name of the instance.
-   */
-  readonly instanceName: string;
-  /**
-   * The user name for connecting to the instance (for example, ec2-user).
-   *
-   * @attribute
-   */
-  readonly instanceUserName: string;
-  /**
-   * A launch script that installs software on an instance, or configures an instance.
-   *
-   * @attribute
-   */
-  readonly instanceUserData?: string;
-  /**
-   * The support code of the instance.
-   * Include this code in your email to support when you have questions about an instance or
-   * another resource in Lightsail. This code helps our support team to look up your Lightsail information.
-   * @attribute
-   */
-  readonly instanceSupportCode: string;
-  /**
-   * The state of the instance (for example, `running` or `pending`).
-   *
-   * @attribute
-   */
-  readonly instanceStateName: string;
-  /**
-   * The status code of the instance.
-   *
-   * @attribute
-   */
-  readonly instanceStateCode: number;
-  /**
-   * The name of the SSH key pair used by the instance.
-   *
-   * @attribute
-   */
-  readonly instanceSshKeyName: string;
-  /**
-   * The resource type of the instance (for example, `Instance`).
-   *
-   * @attribute
-   */
-  readonly instanceResourceType: string;
-  /**
-   * The public IP address of the instance.
-   *
-   * @attribute
-   */
-  readonly instancePublicIpAddress: string;
-  /**
-   * The private IP address of the instance.
-   *
-   * @attribute
-   */
-  readonly instancePrivateIpAddress: string;
-  /**
-   * The amount of allocated monthly data transfer (in GB) for an instance.
-   *
-   * @attribute
-   */
-  readonly instanceNetworkingMonthlyTransferGbPerMonthAllocated: string;
-  /**
-   * The AWS Region of the instance.
-   *
-   * @attribute
-   */
-  readonly instanceLocationRegionName: string;
-  /**
-   * The AWS Region and Availability Zone where the instance is located.
-   *
-   * @attribute
-   */
-  readonly instanceLocationAvailabilityZone: string;
-  /**
-   * The name of the SSH key pair used by the instance.
-   *
-   * @attribute
-   */
-  readonly instanceKeyPairName?: string;
-  /**
-   * Whether the instance has a static IP assigned to it.
-   *
-   * @attribute
-   */
-  readonly instanceIsStaticIp: cdk.IResolvable;
-  /**
-   * The Amazon Resource Name (ARN) of the instance (for example,
-   * `arn:aws:lightsail:us-east-2:123456789101:Instance/244ad76f-8aad-4741-809f-12345EXAMPLE`).
-   *
-   * @attribute
-   */
-  readonly instanceArn: string;
-  /**
-   * The amount of RAM in GB on the instance (for example, `1.0`).
-   *
-   * @attribute
-   */
-  readonly instanceHardwareRamSizeInGb: number;
-  /**
-   * The number of vCPUs the instance has.
-   *
-   * @attribute
-   */
-  readonly instanceHardwareCpuCount: number;
-
-  private cfnInstanceProps: CfnInstanceProps;
+export class Instance extends Resource implements IInstance {  
+  public readonly addOns?: AddOn[];
+  public readonly blueprint:
+    | LinuxOSBlueprint
+    | WindowsOSBlueprint
+    | LinuxAppBlueprint
+    | WindowsAppBlueprint
+    | BlueprintBase;
+  public readonly bundle: Bundle;  
   private readonly props: InstanceProps;
+  public readonly instanceName?: string;
+  public readonly keyPairName?: string;
+  public readonly networking?: Networking;
+  public readonly userData?: aws_cdk.aws_ec2.UserData;
+
+  public readonly instanceArn: string;
+  public readonly ipv6Addresses: string[];
+  public readonly isStaticIp: IResolvable;
+  public readonly locationAvailabilityZone: string;
+  public readonly locationRegionName: string;
+  public readonly networkingMonthlyTransferGbPerMonthAllocated: string;
+  public readonly privateIpAddress: string;
+  public readonly publicIpAddress: string;  
 
   constructor(scope: Construct, id: string, props: InstanceProps) {
-    super(scope, id);
+    super(scope, id, {
+      physicalName:
+        props.instanceName ??
+        Lazy.string({
+          produce: () => Names.uniqueResourceName(this, { maxLength: 64, allowedSpecialCharacters: '-' }).toLowerCase(),
+        }),
+    });
+    
     this.props = props;
 
-    this.cfnInstanceProps = {
-      blueprintId: props.blueprint.id,
-      bundleId: props.bundle.id,
-      instanceName: props.instanceName ?? id,
-      addOns: this.renderAddOns(),
-      networking: this.renderNetworking(),
-      hardware: this.renderHardware(),
-    };
-    const resource = new CfnInstance(this, 'Resource', this.cfnInstanceProps);
+    this.addOns = props.addOns ?? [new AddOn({})];
+    this.blueprint = props.blueprint;
+    this.bundle = props.bundle;    
+    this.keyPairName = props.keyPairName ?? undefined;
+    this.networking = props.networking ?? new Networking({});
+    this.userData = props.userData ?? aws_cdk.aws_ec2.UserData.custom('');
 
-    this.instanceName = resource.instanceName;
-    this.instanceUserName = resource.attrUserName;
-    this.instanceUserData = resource.userData;
-    this.instanceSupportCode = resource.attrSupportCode;
-    this.instanceStateName = resource.attrStateName;
-    this.instanceStateCode = resource.attrStateCode;
-    this.instanceSshKeyName = resource.attrSshKeyName;
-    this.instanceResourceType = resource.attrResourceType;
-    this.instancePublicIpAddress = resource.attrPublicIpAddress;
-    this.instancePrivateIpAddress = resource.attrPrivateIpAddress;
-    this.instanceNetworkingMonthlyTransferGbPerMonthAllocated =
-      resource.attrNetworkingMonthlyTransferGbPerMonthAllocated;
-    this.instanceLocationRegionName = resource.attrLocationRegionName;
-    this.instanceLocationAvailabilityZone = resource.attrLocationAvailabilityZone;
-    this.instanceKeyPairName = resource.keyPairName;
-    this.instanceIsStaticIp = resource.attrIsStaticIp;
-    this.instanceArn = resource.attrInstanceArn;
-    this.instanceHardwareRamSizeInGb = resource.attrHardwareRamSizeInGb;
-    this.instanceHardwareCpuCount = resource.attrHardwareCpuCount;
+    const instance = this.createResource(this, 'Resource', {
+      addOns: this.renderAddOns(this.addOns),
+      instanceName: this.props.instanceName ?? this.physicalName,
+      keyPairName: this.keyPairName,
+      blueprintId: this.blueprint.id,
+      bundleId: this.bundle.id,      
+      networking: this.renderNetworking(this.networking),
+      userData: this.renderUserData(this.userData),
+    });
+    
+    this.instanceArn = instance.attrInstanceArn;
+    this.instanceName = instance.instanceName;
+    this.networkingMonthlyTransferGbPerMonthAllocated = instance.attrNetworkingMonthlyTransferGbPerMonthAllocated;
+    this.privateIpAddress = instance.attrPrivateIpAddress;
+    this.publicIpAddress = instance.attrPublicIpAddress;
+    this.ipv6Addresses = instance.attrIpv6Addresses;
+    this.isStaticIp = instance.attrIsStaticIp;
+    this.locationAvailabilityZone = instance.attrLocationAvailabilityZone;
+    this.locationRegionName = instance.attrLocationRegionName;
+  }
+
+  protected createResource(
+    scope: Construct,
+    id: string,
+    props: aws_lightsail.CfnInstanceProps,
+  ): aws_lightsail.CfnInstance {    
+    return new aws_lightsail.CfnInstance(scope, id, props);
   }
 
   /**
@@ -281,8 +180,8 @@ export class Instance extends Resource implements IInstance {
    *
    * @internal
    */
-  private renderAddOns(): any[] | undefined {
-    return this.props.addOns?.map(addon => addon._render());
+  private renderAddOns(props: AddOn[]): any[] | undefined {
+    return props.map(addon => addon._render());
   }
 
   /**
@@ -290,16 +189,229 @@ export class Instance extends Resource implements IInstance {
    *
    * @internal
    */
-  private renderNetworking(): any | undefined {
-    return this.props.networking?._render();
+  private renderNetworking(props: Networking): any | undefined {
+    return props._render();    
   }
 
   /**
-   * Render hardware property.
+   * Render user data property.
    *
    * @internal
    */
-  private renderHardware(): any | undefined {
-    return this.props.hardware?._render();
+  private renderUserData(props: aws_cdk.aws_ec2.UserData): string {
+    return props.render();
+  }
+}
+
+export interface AutoSnapshotAddOnProps {
+  /**
+   * @default - "06:00"
+   */
+  readonly snapshotTimeOfDay?: string;
+}
+
+export class AutoSnapshotAddOn {
+  public readonly snapshotTimeOfDay: string;
+
+  constructor(props: AutoSnapshotAddOnProps) {
+    const snapshotTimeOfDay = props.snapshotTimeOfDay ?? '06:00';
+    this.validate(snapshotTimeOfDay);
+
+    this.snapshotTimeOfDay = snapshotTimeOfDay;
+  }
+
+  /**
+   * @internal
+   */
+  public _render(): aws_lightsail.CfnInstance.AutoSnapshotAddOnProperty {
+    return {
+      snapshotTimeOfDay: this.snapshotTimeOfDay,
+    };
+  }
+
+  private validate(snapshotTimeOfDay: string): void {
+    const validSnapshotTimeOfDay = snapshotTimeOfDay !== undefined && !Token.isUnresolved(snapshotTimeOfDay);
+
+    const pattern = /^[0-9]{2}:00$/;
+    if (validSnapshotTimeOfDay && !pattern.test(snapshotTimeOfDay)) {
+      throw new Error(
+        `snapshotTimeOfDay must be in the format "HH:00" (24-hour, UTC), e.g. "06:00" or "18:00". Got: "${snapshotTimeOfDay}".`,
+      );
+    }
+
+    const hour = parseInt(snapshotTimeOfDay.substring(0, 2), 10);
+    if (validSnapshotTimeOfDay && (isNaN(hour) || hour < 0 || hour > 23)) {
+      throw new Error(`snapshotTimeOfDay hour component must be between 00 and 23. Got: "${snapshotTimeOfDay}".`);
+    }
+  }
+}
+
+export interface AddOnProps {
+  /**
+   * @default - "AutoSnapshot"
+   */
+  readonly addOnType?: string;
+  readonly autoSnapshotAddOnRequest?: AutoSnapshotAddOn;
+  readonly status?: 'Enabled' | 'Disabled';
+}
+
+export class AddOn {
+  public static autoSnapshot(props: AutoSnapshotAddOnProps = {}): AddOn {
+    return new AddOn({
+      addOnType: 'AutoSnapshot',
+      autoSnapshotAddOnRequest: new AutoSnapshotAddOn(props),
+      status: 'Enabled',
+    });
+  }
+
+  public readonly addOnType: string;
+  public readonly autoSnapshotAddOnRequest?: AutoSnapshotAddOn;
+  public readonly status: 'Enabled' | 'Disabled';
+
+  constructor(props: AddOnProps) {
+    this.addOnType = props.addOnType ?? 'AutoSnapshot';
+    this.autoSnapshotAddOnRequest = props.autoSnapshotAddOnRequest;
+    this.status = props.status ?? 'Enabled';
+  }
+
+  public _render(): aws_lightsail.CfnInstance.AddOnProperty {
+    return {
+      addOnType: this.addOnType,
+      autoSnapshotAddOnRequest: this.autoSnapshotAddOnRequest?._render(),
+      status: this.status,
+    };
+  }
+}
+
+export interface HardwareProps {
+  readonly cpuCount?: number;
+  readonly disks?: aws_lightsail.CfnDisk[]
+  readonly ramSizeInGb?: number;
+}
+export interface PortProps {
+  readonly accessDirection?: string;
+  readonly accessFrom?: string;
+  readonly accessType?: string;
+  readonly cidrListAliases?: string[];
+  readonly cidrs?: string[];
+  readonly commonName?: string;
+  readonly fromPort?: number;
+  readonly ipv6Cidrs?: string[];
+  readonly protocol?: string;
+  readonly toPort?: number;
+}
+
+export class Port {
+  public static http(): Port {
+    return new Port({
+      fromPort: 80,
+      toPort: 80,
+      protocol: 'tcp',
+      commonName: 'HTTP',
+    });
+  }
+
+  public static https(): Port {
+    return new Port({
+      fromPort: 443,
+      toPort: 443,
+      protocol: 'tcp',
+      commonName: 'HTTPS',
+    });
+  }
+
+  public static ssh(): Port {
+    return new Port({
+      fromPort: 22,
+      toPort: 22,
+      protocol: 'tcp',
+      commonName: 'SSH',
+    });
+  }
+
+  public readonly accessDirection: string;
+  public readonly accessFrom: string;
+  public readonly accessType: string;
+  public readonly cidrListAliases?: string[];
+  public readonly cidrs?: string[];
+  public readonly commonName?: string;
+  public readonly fromPort?: number;
+  public readonly ipv6Cidrs?: string[];
+  public readonly protocol: string;
+  public readonly toPort?: number;
+
+  constructor(props: PortProps) {
+    this.accessDirection = props.accessDirection ?? 'inbound';
+    this.accessFrom = props.accessFrom ?? 'Anywhere (0.0.0.0/0)';
+    this.accessType = props.accessType ?? 'Public';
+    this.cidrListAliases = props.cidrListAliases ?? [];
+    this.cidrs = props.cidrs ?? [];
+    this.commonName = props.commonName ?? '';
+    this.fromPort = props.fromPort;
+    this.ipv6Cidrs = props.ipv6Cidrs ?? [];
+    this.protocol = props.protocol ?? 'tcp';
+    this.toPort = props.toPort;
+  }
+
+  public _render(): aws_lightsail.CfnInstance.PortProperty {
+    return {
+      accessDirection: this.accessDirection,
+      accessFrom: this.accessFrom,
+      accessType: this.accessType,
+      cidrListAliases: this.cidrListAliases,
+      cidrs: this.cidrs,
+      commonName: this.commonName,
+      fromPort: this.fromPort,
+      ipv6Cidrs: this.ipv6Cidrs,
+      protocol: this.protocol,
+      toPort: this.toPort,
+    };
+  }
+}
+
+export interface MonthlyTransferProps {
+  readonly gbPerMonthAllocated?: string;
+}
+
+export interface NetworkingProps {
+  readonly ports?: Port[];
+  readonly monthlyTransfer?: MonthlyTransferProps;
+}
+
+export class Networking {
+  public static webServer(): Networking {
+    return new Networking({
+      ports: [Port.http(), Port.https()],
+    });
+  }
+
+  public static webServerWithSsh(): Networking {
+    return new Networking({
+      ports: [Port.http(), Port.https(), Port.ssh()],
+    });
+  }
+
+  public static sshOnly(): Networking {
+    return new Networking({
+      ports: [Port.ssh()],
+    });
+  }
+
+  public static custom(ports: Port[]): Networking {
+    return new Networking({
+      ports,
+    });
+  }
+
+  public readonly ports?: Port[];  
+
+  constructor(props: NetworkingProps) {
+    this.ports = props.ports ?? [];    
+  }
+
+  public _render(): any | undefined {
+    return {
+      ports: (this.ports ?? []).map(port => port._render()),
+    };
   }
 }
