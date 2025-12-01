@@ -57,7 +57,7 @@ export interface IInstance extends IResource {
 export interface InstanceProps {
   /**
    * It describes the add-ons for an instance.
-   * @default - no add-ons.
+   * @default - AutoSnapshot add-on is enabled by default.
    */
   readonly addOns?: AddOn[];
 
@@ -81,7 +81,7 @@ export interface InstanceProps {
 
   /**
    * It describes the name of the instance.
-   * @default - the instance name is the id.
+   * @default - a unique, lowercased logical name is generated.
    */
   readonly instanceName?: string;
 
